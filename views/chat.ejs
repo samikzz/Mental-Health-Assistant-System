@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CompanionCare</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Poppins:ital,wght@0,100;0,200;0,300;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,900&family=Roboto:wght@100&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel='stylesheet' href='/stylesheets/chat.css' />
+    <link rel='stylesheet' href='/stylesheets/home.css' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    
+  
+        <div class="chatpage">
+        <li><a class="logoutbutton">Logout</a></li>
+        </div>
+   
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="container col-lg-12 col-md-12 col-xs-12">
+            <center>    
+            <div class="row col-12" id="chatbox">
+              
+                <div class="send">
+                </div>
+                <h4 class="welcomemsg">
+                    Hello <%= name %>! Ready to start our chat? Ask me anything – Companion Care is your space.
+                </h4>
+            <div class="msgcont">
+             </div> 
+             
+         
+           
+            <div class=" mic col-4 text-center new"  align-content: center;
+            flex-direction: column;
+            display: flex;>
+                <i id="icon" class="fa-solid fa-microphone-slash " ></i>
+                <br/>
+                <span id="record"></span>    
+                <h6 class="instructions">Hey there <%= name %> tap the icon and speak</h6>
+                <div class="gifbox"><img src="./images/loading__.gif" id="loadinggif"></img></div>
+                <div class="test"><%= name %></div>
+            </div>
+         </div>
+            </center>
+            
+        </div>    
+
+    </div>
+ 
+</div>
+<center>
+   
+</center>
+
+
+       
+
+        <script>
+          var chatbox=document.getElementById("chatbox")
+          var mic=document.getElementsByClassName("mic")
+ 
+          var name=document.getElementsByClassName("test")[0].innerHTML
+            function callFastAPI() {
+                $.ajax({
+                    url: "http://localhost:8000/clear",
+                    type: "GET",
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+
+            $(document).ready(function() {
+                callFastAPI();
+            });
+
+         
+
+            const button = document.querySelector('i');
+    
+            const options = {mimeType: 'audio/webm'};
+            const buffer = [];
+            var mediaRecorder = null;
+            // start the recording
+            const startRecording = function() {
+                mediaRecorder.start();
+                // button.classList.toggle('btn-info');
+                button.removeEventListener('click', startRecording);
+                button.addEventListener('click', stopRecording);
+                var icon = document.getElementById('icon');
+                icon.classList.toggle('fa-microphone');
+                icon.classList.toggle('fa-microphone-slash');
+                icon.classList.add('colorred')
+                var audioElement = new Audio();
+audioElement.src = './images/mixkit-positive-interface-click-1112.wav';
+audioElement.play();
+                document.getElementById('record').innerHTML = "Listening";
+                document.getElementsByClassName('instructions')[0].innerHTML=" "
+                document.getElementById('status').style.display="none";
+            }
+    
+            // stop the recording
+            const stopRecording = function() {
+                mediaRecorder.stop();
+                // button.textContent = 'fa-microphone';
+                // button.classList.toggle('btn-info');
+                button.removeEventListener('click', stopRecording);
+                button.addEventListener('click', startRecording);
+                document.getElementById('record').innerHTML = "";
+                var icon = document.getElementById('icon');
+               icon.classList.toggle('fa-microphone-slash');
+                icon.classList.toggle('fa-microphone');
+                icon.classList.remove('colorred')
+                var audioElement = new Audio();
+audioElement.src = './images/mixkit-negative-tone-interface-tap-2569.wav';
+audioElement.play();
+                document.getElementsByClassName('instructions')[0].
+                innerHTML="<h6>Hey there <%= name %> tap the icon and speak</h6>"
+
+            }
+    
+            // init the audio system
+            const handleInit = function(stream) {
+                // start recording with a click of the button
+                button.addEventListener('click', startRecording);
+    
+                // the mediaRecord object that captures the stream
+                mediaRecorder = new MediaRecorder(stream, options);
+    
+                // catches stream of bytearray
+                mediaRecorder.addEventListener('dataavailable', function(e) {
+                    if (e.data.size > 0) buffer.push(e.data);
+                });
+    
+                // when stopped, create a file and allow playback
+                mediaRecorder.addEventListener('stop', function() {
+                    // create a file
+                    const file = new File(buffer, 'audio.webm', {
+                        type: 'audio/webm',
+                        lastModified: Date.now()
+                    });
+                    console.log(file);
+                    
+                    const formdata = new FormData();
+                    formdata.append('audio', file);
+                    console.log(formdata);
+                    
+                    async function addMessage(recogtext) {
+                        console.log(name);
+                        var a = await fetch(`https://ui-avatars.com/api/?name=${name}`);
+                        $('#chatbox').append(
+                            $('<div/>')
+                            .attr("id","msg")
+                            .addClass("msg")
+                            .append(
+                                $('<div/>')
+                                .attr("id","msg-cont")
+                                .append(
+                                        $('<p/>')
+                                        .attr("id","recog-msg")
+                                        .addClass("msg")
+                                        // .text("   YOU :  " +recogtext)
+                                        .text(recogtext)
+                                )
+                                .append(
+    $('<div/>').attr("id", "div-img")
+        .append(
+            $('<img/>').attr({
+                "id": "img-recog",
+                "src": a.url
+            })
+        )
+                                )
+                            )
+                        )
+                        var positionFromTop = chatbox.lastElementChild.offsetTop;
+var dropDistance = 200;
+var newTop = positionFromTop + dropDistance;
+
+$('.mic').css({
+   
+    position: 'absolute',
+    top: newTop + 'px',
+});
+var audioElement = new Audio();
+audioElement.src = './images/Pop sound effect.mp3';
+audioElement.play();
+chatbox.scrollTop=chatbox.scrollHeight;
+
+
+
+
+
+
+   
+                     
+                    }
+                    
+                    function addReply(textreply){
+        
+                        $('#chatbox').append(
+                            $('<div/>')
+                            .attr("id","msg")
+                            .addClass("msg")
+                            .append(
+                                $('<div/>')
+                                .attr("id","rep-cont")
+                                .append(
+                                    $('<img/>')
+                                    .attr("id", "img-reply-recog")
+                                )
+                                .append(
+                                    $('<div/>')
+                                    .attr("id","p-recog")
+                                )
+                                .append(
+                                    $('<p/>')
+                                    .attr("id","reply-msg")
+                                    .addClass("reply")
+                                    .text(textreply)
+                                )
+                            )
+                        );
+                       
+                        var positionFromTop = chatbox.lastElementChild.offsetTop;
+var dropDistance = 300;
+var newTop = positionFromTop + dropDistance;
+
+$('.mic').css({
+    'margin-left':'340px',
+    position: 'absolute',
+    top: newTop + 'px',
+});
+var audioElement = new Audio();
+audioElement.src = './images/Pop sound effect.mp3';
+audioElement.play();
+document.getElementById("loadinggif").style.display = "none";
+chatbox.scrollTop=chatbox.scrollHeight;
+
+
+
+
+    
+
+                    }
+
+                
+                    fetch("http://localhost:8000/audio", {
+                        method: "POST",
+                        body: formdata
+                    }).then(res => res.json()).then(data => {
+                        var recogtext = data.texts;
+                        // console.log(recogtext)
+                         addMessage(recogtext)
+                         document.getElementById("loadinggif").style.display = "block"; 
+                        document.getElementById("icon").style.pointerEvents = "none";
+                        
+                         fetch('http://localhost:8000/reply',{
+                            method:"GET"
+                         }).then(res=>res.json()).then(data=>{
+                            var textreply= data.reply;
+
+                            addReply(textreply)
+                           
+                            document.getElementById("icon").style.pointerEvents = "auto";
+                            // console.log(textreply)
+                            
+                         })
+                    });
+
+            buffer.length = 0; // empty the buffer for the next one
+                });          
+            };
+    
+            // init the stream from the audio device
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                .then(handleInit);
+
+
+
+              
+        </script>
+
+        <script>
+           var logoutbutton=document.getElementsByClassName('logoutbutton')[0] 
+         logoutbutton.addEventListener('click',()=>{
+            logout();
+         })
+
+       async function logout(){     Swal.fire({
+  title: "Logout?",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, logout!"
+}).then((result) => {
+  if (result.isConfirmed) {
+      confirm();
+
+
+}
+
+});
+
+       }
+
+       async function confirm(params) {
+        await Swal.fire({
+      title: "We're Here Do Come Back",
+      text: "Logout Successfull",
+      icon: "success"
+    });
+    document.getElementsByClassName('swal2-confirm')[0].style.display="none"
+    window.location.href="/"
+       }
+
+       
+     
+        
+        </script>
+</body>
+</html>

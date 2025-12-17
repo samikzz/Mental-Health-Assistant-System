@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CompanionCare</title>
+    <link rel='stylesheet' href='/stylesheets/Style.css' />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+   <div class="main">
+    <img src="./images/chatbot.png" alt="" class="registerimage">
+    <div class="credentialsbox">        
+        <h1 class="registerhere">Register Here</h1>
+
+       <input class="nameofuser" placeholder="Enter Your Name Here"></input>
+     <input type="password" class="passwordofuser" placeholder="Enter Your Password Here"></input>
+        <div class="buttons">
+        <a class="btn">Register</a>
+        </div>
+    </div>
+    </div>
+
+    <script>
+
+        var btn=document.getElementsByClassName("btn")[0]
+        var nameofuser=document.getElementsByClassName("nameofuser")[0]
+        var passwordofuser=document.getElementsByClassName("passwordofuser")[0]
+        btn.addEventListener('click',()=>{
+        
+            if (!nameofuser.value || !passwordofuser.value) {
+                Swal.fire({
+  icon: "error",
+  title: "OOPS...",
+  text: "USERNAME OR PASSWORD MISSING",
+});
+    event.preventDefault();
+} else {
+    var usernameTaken = false;
+
+    // Retrieving all key-value pairs from local storage
+    const localStorageData = Object.entries(localStorage);
+
+    for (const [key, value] of localStorageData) {
+        if (nameofuser.value === key) {
+            // Username is already taken
+            usernameTaken = true;
+            break;
+        }
+    }
+
+    if (usernameTaken) {
+        Swal.fire({
+  icon: "error",
+  title: "OOPS...",
+  text: "USERNAME ALREADY TAKEN",
+});
+        event.preventDefault();
+    } else {
+
+       successfulregistration(nameofuser.value,passwordofuser.value);
+       async function successfulregistration(name,password){
+
+        await Swal.fire({
+  position: "middle",
+  icon: "success",
+  title: "Successful Registration",
+  showConfirmButton: false,
+  timer: 1500
+});
+        localStorage.setItem(name,password);
+        const encodedName = encodeURIComponent(name);
+        const encodedPassword = encodeURIComponent(password);
+        const chatUrl = `http://localhost:3000/chat?name=${encodedName}&password=${encodedPassword}`;
+        window.location.href = chatUrl;
+
+       }
+    }
+}
+
+        })
+    </script>
+   
+</body>
+</html>
